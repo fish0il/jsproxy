@@ -20,7 +20,7 @@ jsproxy_config({
         'node-aliyun-hk-2.etherdream.com:8443': 2,
       }
     },
-    'demo-sg': {
+    'demo-us': {
       label: '演示服务-美国洛杉矶节点',
       lines: {
         'node-us-los-01.esq.pw:8443': 1,

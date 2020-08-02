@@ -21,6 +21,12 @@ jsproxy_config({
       }
     },
     'demo-sg': {
+      label: '演示服务-美国洛杉矶节点',
+      lines: {
+        'node-us-los-01.esq.pw:8443': 1,
+      },
+    },
+    'demo-sg': {
       label: '演示服务-新加坡节点',
       lines: {
         'node-aliyun-sg.etherdream.com:8443': 1,

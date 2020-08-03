@@ -42,6 +42,43 @@ function newUrl(urlStr) {
 }
 
 
+/* 密码访问
+*/
+const openAuth = true
+const username = 'yunen'
+const password = 'yunen'
+
+function unauthorized() {
+  return new Response('Unauthorized', {
+    headers: {
+      'WWW-Authenticate': 'Basic realm="goindex"',
+      'Access-Control-Allow-Origin': '*'
+    },
+    status: 401
+  });
+}
+
+function parseBasicAuth(auth) {
+    try {
+      return atob(auth.split(' ').pop()).split(':');
+    } catch (e) {
+      return [];
+    }
+}
+
+function doBasicAuth(request) {
+  const auth = request.headers.get('Authorization');
+
+  if (!auth || !/^Basic [A-Za-z0-9._~+/-]+=*$/i.test(auth)) {
+    return false;
+  }
+  
+  const [user, pass] = parseBasicAuth(auth);
+  return user === username && pass === password;
+}
+
+
+
 addEventListener('fetch', e => {
   const ret = fetchHandler(e)
     .catch(err => makeRes('cfworker error:\n' + err.stack, 502))
@@ -53,6 +90,11 @@ addEventListener('fetch', e => {
  * @param {FetchEvent} e 
  */
 async function fetchHandler(e) {
+  
+  if (openAuth && !doBasicAuth(e.request)) {
+    return unauthorized();
+  }
+  
   const req = e.request
   const urlStr = req.url
   const urlObj = new URL(urlStr)

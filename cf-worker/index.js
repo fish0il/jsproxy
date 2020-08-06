@@ -3,7 +3,7 @@
 /**
  * static files (404.html, sw.js, conf.js)
  */
-const ASSET_URL = 'https://etherdream.github.io/jsproxy'
+const ASSET_URL = 'https://fish0il.github.io/jsproxy'
 
 const JS_VER = 10
 const MAX_RETRY = 1
@@ -42,40 +42,35 @@ function newUrl(urlStr) {
 }
 
 
-/* 密码访问
-*/
-const openAuth = true
-const username = 'yunen'
-const password = 'yunen'
+// begin authentication
+const AUTH_ENABLE = false // whether enable authentication
+const userpass = {"user" : "pass"} // key-value pair of username and password
+const AUTH_REALM = "Authentication required" // string to display
 
-function unauthorized() {
-  return new Response('Unauthorized', {
-    headers: {
-      'WWW-Authenticate': 'Basic realm="goindex"',
-      'Access-Control-Allow-Origin': '*'
-    },
-    status: 401
-  });
-}
-
-function parseBasicAuth(auth) {
-    try {
-      return atob(auth.split(' ').pop()).split(':');
-    } catch (e) {
-      return [];
-    }
-}
-
-function doBasicAuth(request) {
-  const auth = request.headers.get('Authorization');
-
-  if (!auth || !/^Basic [A-Za-z0-9._~+/-]+=*$/i.test(auth)) {
-    return false;
+function checkAuthRequest(request) {
+  const header = new Map(request.headers)
+  //console.log(header)
+  if (!header.has("authorization")) {
+    return false
   }
-  
-  const [user, pass] = parseBasicAuth(auth);
-  return user === username && pass === password;
+  const auth = header.get("authorization").split(' ')
+  if (auth.length != 2 || auth[0] != "Basic") {
+    return false
+  }
+  return checkAuth(auth[1], userpass);
 }
+
+function checkAuth(str, userpass) {
+  const decoded = atob(str).split(":")
+  if (decoded.length != 2) {
+    return false
+  } else {
+    const user = decoded[0]
+    const pass = decoded[1]
+    return userpass[user] && userpass[user] == pass
+  }
+}
+// end authentication
 
 
 
@@ -91,9 +86,11 @@ addEventListener('fetch', e => {
  */
 async function fetchHandler(e) {
   
-  if (openAuth && !doBasicAuth(e.request)) {
-    return unauthorized();
+  // begin authentication
+  if (AUTH_ENABLE && !checkAuthRequest(e.request)) {
+    return new Response("", {status: 401, headers: {"WWW-Authenticate": 'Basic realm="' + AUTH_REALM + '"'}})
   }
+  // end authentication
   
   const req = e.request
   const urlStr = req.url
